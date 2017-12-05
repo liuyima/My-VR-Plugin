@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CircleRingBtns : MonoBehaviour {
+public class CircleRingBtns : MainMenu{
 
     public Transform center;
     public Transform needle;
     public CircleRingButton[] btns;
     public iTween.EaseType easeType;
-    public delegate void OnHideOption();
-    event OnHideOption onHideOptionEvent;
     public Text nameText;
     bool isOpen = false;
     CircleRingButton[] currentShowBtns;
@@ -69,7 +67,7 @@ public class CircleRingBtns : MonoBehaviour {
         }
     }
 
-    public void SetBtns(Operations[] operations,string optionName, OnHideOption onHideOption)
+    public override void SetBtns(Operations[] operations,string optionName, OnHideOption onHideOption)
     {
         RestoreBtns();
         onHideOptionEvent += onHideOption;
@@ -85,7 +83,7 @@ public class CircleRingBtns : MonoBehaviour {
         nameText.text = optionName;
     }
 
-    public void ChangeOneBtn(string originalBtnName,Operations newOp)
+    public override void ChangeOneBtn(string originalBtnName,Operations newOp)
     {
         foreach (CircleRingButton btn in currentShowBtns)
         {
@@ -97,7 +95,7 @@ public class CircleRingBtns : MonoBehaviour {
         }
     }
 
-    public void HideMenu()
+    public override void HideMenu()
     {
         RestoreBtns();
         if (currentShowBtns != null)
@@ -106,7 +104,7 @@ public class CircleRingBtns : MonoBehaviour {
         }
     }
 
-    public void ShowMenu()
+    public override  void ShowMenu()
     {
         ShowHide(true, currentShowBtns.Length);
         Manager.manager.trackedObjectManager.ShockHand(Manager.manager.trackedObjectManager.left, 0.25f);
@@ -157,14 +155,9 @@ public class CircleRingBtns : MonoBehaviour {
         }
     }
 
-    void RestoreBtns()
+    protected override void RestoreBtns()
     {
-        Debug.Log("restore buttons");
-        if (onHideOptionEvent != null)
-        {
-            onHideOptionEvent.Invoke();
-            onHideOptionEvent = null;
-        }
+        base.RestoreBtns();
         isOpen = false;
         if (currentTouchBtnIndex != -1)
         {

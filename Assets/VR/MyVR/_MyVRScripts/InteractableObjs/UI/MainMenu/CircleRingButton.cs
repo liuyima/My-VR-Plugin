@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CircleRingButton : MonoBehaviour {
-    [HideInInspector]
-    public VREvent myEvent;
-    [HideInInspector]
-    public Text text;
+public class CircleRingButton : MenuButton {
     bool isIn = false;
     Image image;
     Vector3 originalLocalPos;
     Quaternion originalLocalRot;
-    private void Awake()
+    protected override void Awake()
     {
-        text = GetComponentInChildren<Text>();
+        base.Awake();
         image = GetComponent<Image>();
     }
 
@@ -30,26 +26,12 @@ public class CircleRingButton : MonoBehaviour {
 		
 	}
 
-    public void SetButton(Operations operation)
+    public override void RestoreButton()
     {
-        text.text = operation.name;
-        myEvent = operation.events;
-    }
-
-    public void RestoreButton()
-    {
-        text.text = "";
-        myEvent = null;
         transform.localPosition = originalLocalPos;
         transform.localRotation = originalLocalRot;
     }
-
-    public void InvokeMyEvent()
-    {
-        myEvent.Invoke();
-        Manager.manager.audioManager.PlaySelectAudio();
-    }
-
+    
     public void OnTouchIn()
     {
         isIn = true;
