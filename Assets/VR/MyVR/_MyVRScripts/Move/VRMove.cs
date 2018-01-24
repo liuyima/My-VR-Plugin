@@ -59,7 +59,7 @@ public class VRMove : MonoBehaviour {
         direct.y = 0;
         Vector3 headF = Manager.manager.trackedObjectManager.eye.forward;
         headF.y = 0;
-        Vector3 headR = Manager.manager.trackedObjectManager.eye.transform.right;
+        Vector3 headR = Manager.manager.trackedObjectManager.eye.right;
         headR.y = 0;
         float dot = Vector3.Dot(headR.normalized, direct.normalized);
         float onRight = dot / Mathf.Abs(dot);
