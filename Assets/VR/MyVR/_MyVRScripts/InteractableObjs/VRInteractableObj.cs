@@ -10,13 +10,14 @@ using UnityEngine.Serialization;
     *功能：可操作的物体继承此类 
     */
 public enum InteractableObjType { VRUI, UsableObj, BeWatchedObj }
-public abstract class VRInteractableObj : MonoBehaviour, IVRInteractableObj {
+public abstract class VRInteractableObj : MonoBehaviour, IVRInteractableObj
+{
     [HideInInspector]
     public InteractableObjType myObjType;
     protected SteamVR_TrackedObject.EIndex selectIndex = SteamVR_TrackedObject.EIndex.None;
 
     public delegate void VRInteractableHandler();
-    public event VRInteractableHandler rayInEvent,rayStayEvent,rayOutEvent;
+    public event VRInteractableHandler rayInEvent, rayStayEvent, rayOutEvent;
 
     public bool interactable { get { return _interactable; } set { _interactable = value; } }
     protected bool _interactable = true;
@@ -43,6 +44,7 @@ public abstract class VRInteractableObj : MonoBehaviour, IVRInteractableObj {
         if (selectIndex == rayArgs.trackedObj.index)
         {
             rayIn = false;
+            selectIndex = SteamVR_TrackedObject.EIndex.None;
             RayOutAction();
         }
     }
@@ -51,7 +53,7 @@ public abstract class VRInteractableObj : MonoBehaviour, IVRInteractableObj {
     {
         if (selectIndex == rayArgs.trackedObj.index)
         {
-            RayOutAction();
+            RayStayAction();
         }
     }
 

@@ -10,20 +10,19 @@ public struct VRRayCastArgs
 {
     public RaycastHit hit;
     public SteamVR_TrackedObject trackedObj;
-    public VRRayCastArgs(RaycastHit hit,SteamVR_TrackedObject trackedObj)
+    public VRRayCastArgs(RaycastHit hit, SteamVR_TrackedObject trackedObj)
     {
         this.hit = hit;
         this.trackedObj = trackedObj;
     }
 }
-public class EmitRay : MonoBehaviour {
+public class EmitRay : MonoBehaviour
+{
 
     public SteamVR_TrackedObject trackedObj;
-    public Vector3 endPosition { get; private set;}
+    public Vector3 endPosition { get; private set; }
     public LayerMask castLayer;
     public Line line;
-    [HideInInspector]
-    public GameObject currentObj;
     [HideInInspector]
     public GameObject currentInteractableObj;
     [HideInInspector]
@@ -35,85 +34,88 @@ public class EmitRay : MonoBehaviour {
     public event EmitRayHandler onHitCollider;
 
     // Use this for initialization
-    protected void Start () {
+    protected void Start()
+    {
         if (trackedObj == null)
         {
             trackedObj = GetComponent<SteamVR_TrackedObject>();
         }
-	}
-	
-	// Update is called once per frame
-	protected virtual void Update () {
+    }
+
+    // Update is called once per frame
+    protected virtual void Update()
+    {
         EmitRayAndGetObj();
-	}
+    }
 
     protected bool EmitRayAndGetObj()
     {
         bool cast = false;
-        currentObj = null;
         RaycastHit hit;
         bool isHittingTerrain = false;
         Ray ray = new Ray(transform.position, transform.forward);
         Vector3 lineEndPos = transform.position + transform.forward * 200;
-        if (Physics.Raycast(ray,out hit,castLength,castLayer))
+        if (Physics.Raycast(ray, out hit, castLength, castLayer))
         {
             if (onHitCollider != null)
             {
-                onHitCollider(true,hit);
+                onHitCollider(true, hit);
             }
             cast = true;
-            currentObj = hit.collider.gameObject;//当前检测到的物体
-            IVRInteractableObj iobj = currentObj.GetComponent<IVRInteractableObj>();
-            GameObject castedObj = currentObj;
-            if (iobj == null)
+            GameObject castedInteractableObj = hit.collider.gameObject;//当前检测到的物体
+            IVRInteractableObj[] iobjs = new IVRInteractableObj[0];
+            Transform objParent = castedInteractableObj.transform.parent;
+
+            while (castedInteractableObj.GetComponent<IVRInteractableObj>() == null && objParent != null)
             {
-                iobj = currentObj.GetComponentInParent<IVRInteractableObj>();
+                castedInteractableObj = objParent.gameObject;
+                objParent = objParent.parent;
             }
-            if (castedObj != currentInteractableObj)
+
+            if (castedInteractableObj != null && castedInteractableObj.GetComponent<IVRInteractableObj>() != null)
+            {
+                iobjs = castedInteractableObj.GetComponents<IVRInteractableObj>();
+            }
+            else
+            {
+                castedInteractableObj = null;
+            }
+
+
+
+            if (castedInteractableObj != currentInteractableObj)
             {
                 if (currentInteractableObj != null)
                 {
-                    IVRInteractableObj[] iInteractables = currentInteractableObj.GetComponents<IVRInteractableObj>();
-                    if (iInteractables.Length == 0)
+                    IVRInteractableObj[] outObjs = currentInteractableObj.GetComponents<IVRInteractableObj>();
+                    for (int i = 0; i < outObjs.Length; i++)
                     {
-                        iInteractables = currentInteractableObj.GetComponentsInParent<IVRInteractableObj>();
-                    }
-                    for (int i = 0; i < iInteractables.Length; i++)
-                    {
-                        iInteractables[i].OnRayOut(new VRRayCastArgs(hit, trackedObj));
+                        outObjs[i].OnRayOut(new VRRayCastArgs(hit, trackedObj));
                     }
                 }
-                currentInteractableObj = castedObj;
+                currentInteractableObj = castedInteractableObj;
                 if (currentInteractableObj != null)
                 {
-                    IVRInteractableObj[] iobjs = currentInteractableObj.GetComponents<IVRInteractableObj>();
-                    if (iobjs.Length == 0)
-                    {
-                        iobjs = currentInteractableObj.GetComponentsInParent<IVRInteractableObj>();
-                    }
                     for (int i = 0; i < iobjs.Length; i++)
                     {
+                        Debug.Log(iobjs[i]);
                         iobjs[i].OnRayIn(new VRRayCastArgs(hit, trackedObj));
                     }
                 }
             }
             else if (currentInteractableObj != null)
             {
-                IVRInteractableObj[] iobjs = currentInteractableObj.GetComponents<IVRInteractableObj>();
-                if (iobjs.Length == 0)
+                IVRInteractableObj[] stayObjs = currentInteractableObj.GetComponents<IVRInteractableObj>();
+                for (int i = 0; i < stayObjs.Length; i++)
                 {
-                    iobjs = currentInteractableObj.GetComponentsInParent<IVRInteractableObj>();
-                }
-                for (int i = 0; i < iobjs.Length; i++)
-                {
-                    iobjs[i].OnRayStay(new VRRayCastArgs(hit, trackedObj));
+                    stayObjs[i].OnRayStay(new VRRayCastArgs(hit, trackedObj));
                 }
             }
             lineEndPos = hit.point;
 
             isHittingTerrain = hit.collider.tag == Manager.manager.vrMove.currentMovableTag;
         }
-        else 
+        else
         {
             if (onHitCollider != null)
             {
